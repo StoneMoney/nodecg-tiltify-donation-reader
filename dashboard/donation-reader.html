@@ -103,7 +103,7 @@
 				if (newvalue[i].read) {
 					continue;
 				}
-				unread++;
+				unreadCount++;
 				$("#donations").append("<div class=\"card\" id=\"donation-row-" + newvalue[i].id + "\"><div class=\"container\" style=\"border: rgb(82, 95, 120); border-radius: 12px; border-style: groove;\"><h2 id=\"name\"></h2><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + newvalue[i].id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 				const row = $("#donation-row-" + newvalue[i].id);
 				row.find("#name").text(`${newvalue[i].name} Donated $${newvalue[i].amount.toFixed(2)}`);
