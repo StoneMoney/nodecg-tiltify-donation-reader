@@ -22,12 +22,36 @@
 			display: block;
 			width: 100%;
 		}
-
-
+		.stats-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+		.stats-card {
+			margin: 8px;
+			padding: 8px;
+			border: 1px solid black;
+			border-radius: 8px;
+			box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+			transition: 0.3s;
+		}
 	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
 </head>
 <body>
+	<div class="stats-row">
+	<div class="stats-card">
+		Total Raised
+		<h2 id="total-raised">LOADING!</h2>
+	</div>
+	<div class="stats-card">
+		Total Donations
+		<h2 id="total-donations">???</h2>
+	</div>
+	<div class="stats-card">
+		Unread Donations
+		<h2 id="unread-donations">???</h2>
+	</div>
+	</div>
     <div class="col-sm-12" id="goals"></div>
     <div class="col-sm">
       <p>
@@ -41,8 +65,9 @@
 		var donations = [];
 		var goals = [];
 		var donationRep = nodecg.Replicant("donations", "nodecg-tiltify");
+		var totalRep = nodecg.Replicant("total", "nodecg-tiltify");
 		var goalRep = nodecg.Replicant("incentives", "nodecg-starbar");
-		NodeCG.waitForReplicants(goalRep).then(()=>{
+		NodeCG.waitForReplicants(donationRep, goalRep, totalRep).then(()=>{
 			goalRep.on("change", function(newvalue, oldvalue) {
 				goals = [...goalRep.value]
 				goals = goals.map((goal,i)=>{
@@ -65,14 +90,20 @@
 					});
 				}
 			});
+			totalRep.on("change", function(newvalue, oldvalue) {
+				$("#total-raised").text(toUSD(newvalue))
+			});
 		});
 		donationRep.on("change", function(newvalue, oldvalue) {
 			donations = newvalue;
 			$("#donations").empty();
+			let unreadCount = 0;
+			$("#total-donations").text(newvalue.length)
 			for (let i = 0; i < newvalue.length; i++) {
 				if (newvalue[i].read) {
 					continue;
 				}
+				unread++;
 				$("#donations").append("<div class=\"card\" id=\"donation-row-" + newvalue[i].id + "\"><div class=\"container\" style=\"border: rgb(82, 95, 120); border-radius: 12px; border-style: groove;\"><h2 id=\"name\"></h2><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + newvalue[i].id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 				const row = $("#donation-row-" + newvalue[i].id);
 				row.find("#name").text(`${newvalue[i].name} Donated $${newvalue[i].amount.toFixed(2)}`);
@@ -85,6 +116,7 @@
           			nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', newvalue[i]);
 				});
 			}
+			$("#unread-donations").text(unreadCount);
 		});
 		$("#clear-donations").click(function() {
       var confirmClear = confirm("Are you sure you want to clear all donations?")
@@ -92,6 +124,9 @@
         nodecg.sendMessageToBundle('clear-donations', 'nodecg-tiltify');
       }
 		});
+		function toUSD (input) {
+			return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(input))
+		}
 	</script>
 </body>
 </html>
