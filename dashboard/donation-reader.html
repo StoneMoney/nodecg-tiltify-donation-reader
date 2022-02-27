@@ -80,7 +80,6 @@
 			<div class="stats-card">
 				Total Raised
 				<h2 id="total-raised">LOADING!</h2>
-				<h4 id="last-hour">???</h4>
 			</div>
 			<div class="stats-card">
 				Total Donations
@@ -106,16 +105,11 @@
 	</div>
 
 	<script>
-		Date.prototype.addHours = function(h) { 
-            this.setTime(this.getTime() + (h*60*60*1000)); 
-            return this; 
-        }
 		var donations = [];
 		var goals = [];
 		var donationRep = nodecg.Replicant("donations", "nodecg-tiltify");
 		var totalRep = nodecg.Replicant("total", "nodecg-tiltify");
 		var goalRep = nodecg.Replicant("incentives", "nodecg-starbar");
-		const HOUR = 60 * 60 * 1000;
 		NodeCG.waitForReplicants(donationRep, goalRep, totalRep).then(() => {
 			goalRep.on("change", function (newvalue, oldvalue) {
 				goals = [...goalRep.value]
@@ -146,24 +140,17 @@
 				donations = newvalue;
 				$("#donations").empty();
 				let unreadCount = 0;
-				let raisedLastHour = 0;
 				$("#total-donations").text(newvalue.length)
 				$("#dollars-per").text(toUSD(totalRep.value/newvalue.length) + " avg per dono")
-				let hourAgo = new Date()
-				$("#update").text("Last updated: "+hourAgo.toLocaleTimeString())
-				hourAgo.addHours(-1)
+				$("#update").text("Last updated: "+new Date().toLocaleTimeString())
 				for (let i = 0; i < newvalue.length; i++) {
-					if (newvalue[i].completedAt > 0 && (new Date(newvalue[i].completedAt).getTime() - hourAgo.getTime()) < HOUR) {
-						raisedLastHour+=newvalue[i].amount
-					}
 					if (newvalue[i].read) {
 						continue;
 					}
 					unreadCount++;
-					$("#donations").append("<div class=\"card\" id=\"donation-row-" + newvalue[i].id + "\"><div class=\"container\" style=\"border: rgb(82, 95, 120); border-radius: 12px; border-style: groove;\"><h2 id=\"name\"></h2><div id=\"time\"></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + newvalue[i].id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
+					$("#donations").append("<div class=\"card\" id=\"donation-row-" + newvalue[i].id + "\"><div class=\"container\" style=\"border: rgb(82, 95, 120); border-radius: 12px; border-style: groove;\"><h2 id=\"name\"></h2><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + newvalue[i].id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 					const row = $("#donation-row-" + newvalue[i].id);
 					row.find("#name").text(`${newvalue[i].name} donated $${newvalue[i].amount.toFixed(2)}`);
-					row.find("#time").text(new Date(newvalue[i].completedAt).toLocaleTimeString())
 					if (newvalue[i].comment != undefined) {
 						row.find("#message").text(newvalue[i].comment);
 					} else {
@@ -173,7 +160,6 @@
 						nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', newvalue[i]);
 					});
 				}
-				$("#last-hour").text(toUSD(raisedLastHour)+" in the last hour")
 				$("#unread-donations").text(unreadCount);
 			});
 		});
