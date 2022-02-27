@@ -153,13 +153,9 @@
 				$("#update").text("Last updated: "+hourAgo.toLocaleTimeString())
 				hourAgo.addHours(-1)
 				for (let i = 0; i < newvalue.length; i++) {
-					if (newvalue[i].completedAt < 0 && (new Date(newvalue[i].completedAt).getTime() - hourAgo.getTime()) > HOUR) {
-						continue;
+					if (newvalue[i].completedAt > 0 && (new Date(newvalue[i].completedAt).getTime() - hourAgo.getTime()) < HOUR) {
+						raisedLastHour+=newvalue[i].amount
 					}
-					raisedLastHour+=newvalue[i].amount
-				}
-				$("#last-hour").text(toUSD(raisedLastHour)+" in the last hour")
-				for (let i = 0; i < newvalue.length; i++) {
 					if (newvalue[i].read) {
 						continue;
 					}
@@ -177,6 +173,7 @@
 						nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', newvalue[i]);
 					});
 				}
+				$("#last-hour").text(toUSD(raisedLastHour)+" in the last hour")
 				$("#unread-donations").text(unreadCount);
 			});
 		});
