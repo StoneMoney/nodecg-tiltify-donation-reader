@@ -4,6 +4,9 @@
 <head>
 	<meta charset="UTF-8">
 	<style>
+		body {
+			margin: 0px;
+		}
 		.monospace {
 			font-family: monospace;
 		}
@@ -87,6 +90,14 @@
 			overflow-y: scroll;
 			height: 100vh;
 		}
+		.title-bar {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+		}
+		#time {
+			margin: 2px;
+		}
 	</style>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
 </head>
@@ -101,9 +112,21 @@
 			<p>
 				<button class="btn teal block" id="clear-donations" href="#" role="button">Clear Donation Queue</button>
 			</p>
+			<p>
+				<h2>Sort donations by</h2>
+				<div class="stats-card">
+					<select id="donation-sorter">
+						<option value="old">Chronological - Old to New</option>
+						<option value="new">Reverse Chronological - New to Old</option>
+						<option value="big">$$$ - Largest to Smallest</option>
+					</select>
+				</div>
+			</p>
+			<h2>Stats</h2>
 			<div class="stats-card">
 				Total Raised
 				<h2 id="total-raised">LOADING!</h2>
+				<h4 id="via-incentive">??? via Chaos Cookie</h4>
 			</div>
 			<div class="stats-card">
 				Total Donations
@@ -115,17 +138,39 @@
 				<h2 id="unread-donations">???</h2>
 				<h4 id="update">???</h4>
 			</div>
+			<div class="stats-card">
+				Combo Counter
+				<h2 id="combo-count">No Combo</h2>
+				<h4 id="combo-record">Event record: 0</h4>
+			</div>
 			<div class="col-sm-12" id="goals"></div>
 		</div>
 	</div>
 
 	<script>
+		var sorterInitial = window.localStorage.getItem("donation-sort")
+		if(sorterInitial) {
+			$("#donation-sorter").val(sorterInitial).change()
+		}
+		var sorter = getSort();
 		var donations = [];
 		var goals = [];
 		var donationRep = nodecg.Replicant("donations", "nodecg-tiltify");
 		var totalRep = nodecg.Replicant("total", "nodecg-tiltify");
 		var goalRep = nodecg.Replicant("incentives", "nodecg-starbar");
-		NodeCG.waitForReplicants(donationRep, goalRep, totalRep).then(() => {
+		var comboRep = nodecg.Replicant("combo-total", "nodecg-starbar");
+		var comboRecordRep = nodecg.Replicant("combo-record", "nodecg-starbar");
+		var cookieRep = nodecg.Replicant("cookie-total", "nodecg-colobox");
+		NodeCG.waitForReplicants(donationRep, goalRep, totalRep, cookieRep, comboRep, comboRecordRep).then(() => {
+			cookieRep.on("change",(newval,oldval) => {
+				document.getElementById("via-incentive").innerText = `${toUSD(newval)} via Chaos Cookie`
+			})
+			comboRep.on("change",(newVal, oldVal) => {
+				document.getElementById("combo-count").innerText = comboRep.value
+			})
+			comboRecordRep.on("change",(newVal, oldVal) => {
+				document.getElementById("combo-record").innerText = "Event record: " + comboRecordRep.value
+			})
 			goalRep.on("change", function (newvalue, oldvalue) {
 				goals = [...goalRep.value]
 				goals = goals.map((goal, i) => {
@@ -152,30 +197,7 @@
 				$("#total-raised").text(toUSD(newvalue))
 			});
 			donationRep.on("change", function (newvalue, oldvalue) {
-				donations = newvalue;
-				$("#donations").empty();
-				let unreadCount = 0;
-				$("#total-donations").text(newvalue.length)
-				$("#dollars-per").text(toUSD(totalRep.value/newvalue.length) + " avg per dono")
-				$("#update").text("Last updated: "+new Date().toLocaleTimeString())
-				for (let i = 0; i < newvalue.length; i++) {
-					if (newvalue[i].read) {
-						continue;
-					}
-					unreadCount++;
-					$("#donations").append("<div class=\"card\" id=\"donation-row-" + newvalue[i].id + "\"><div class=\"container\"><h2 id=\"name\"></h2><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + newvalue[i].id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
-					const row = $("#donation-row-" + newvalue[i].id);
-					row.find("#name").text(`$${newvalue[i].amount.toFixed(2)} donated by ${newvalue[i].name} `);
-					if (newvalue[i].comment != undefined) {
-						row.find("#message").text(newvalue[i].comment);
-					} else {
-						row.find("#message").text("No Message");
-					}
-					row.find("#button-" + newvalue[i].id).click(function () {
-						nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', newvalue[i]);
-					});
-				}
-				$("#unread-donations").text(unreadCount);
+				drawDonations(newvalue)
 			});
 		});
 		$("#clear-donations").click(function () {
@@ -184,6 +206,61 @@
 				nodecg.sendMessageToBundle('clear-donations', 'nodecg-tiltify');
 			}
 		});
+		$("#donation-sorter").on("change",function () {
+			let val = this.value
+			window.localStorage.setItem("donation-sort", val)
+			sorter = getSort(val)
+			drawDonations(donations)
+		})
+		function drawDonations(donationsIn) {
+			donations = donationsIn;
+			$("#donations").empty();
+			// Get only unreads
+			donations = donations.filter(don => !don.read)
+			donations = donations.sort(sorter)
+			let unreadCount = donations.length;
+			$("#total-donations").text(donationsIn.length)
+			$("#dollars-per").text(toUSD(totalRep.value/donationsIn.length) + " avg per dono")
+			$("#update").text("Last updated: "+new Date().toLocaleTimeString())
+			for (donation of donations) {
+				$("#donations").append("<div class=\"card\" id=\"donation-row-" + donation.id + "\"><div class=\"container\"><div class=\"title-bar\"><h2 id=\"name\"></h2><h4 id=\"time\"></h4></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + donation.id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
+				const row = $("#donation-row-" + donation.id);
+				row.find("#name").text(`$${donation.amount.toFixed(2)} donated by ${donation.name} `);
+				row.find("#time").text(`${new Date(donation.completedAt).toLocaleString()}`);
+				if (donation.comment != undefined) {
+					row.find("#message").text(donation.comment);
+				} else {
+					row.find("#message").text("No Message");
+				}
+				row.find("#button-" + donation.id).click(function () {
+					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', donation);
+				});
+			}
+			$("#unread-donations").text(unreadCount);
+		}
+		function getSort(val) {
+			if(!val) {
+				val = window.localStorage.getItem("donation-sort")
+			}
+			switch(val) {
+				case 'big':
+					return largestFirstSort
+				case 'new':
+					return newestFirstSort
+				case 'old':
+				default:
+					return oldestFirstSort
+			}
+		}
+		function oldestFirstSort(a,b) {
+			return a.completedAt - b.completedAt
+		}
+		function newestFirstSort(a,b) {
+			return b.completedAt - a.completedAt
+		}
+		function largestFirstSort(a,b) {
+			return b.amount - a.amount
+		}
 		function toUSD(input) {
 			return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(input))
 		}
