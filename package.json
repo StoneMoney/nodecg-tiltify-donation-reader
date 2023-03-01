@@ -30,6 +30,14 @@
         "file": "donation-reader.html",
         "fullbleed": true,
         "headerColor": "#525F78"
+      },
+      {
+        "name": "VIP Phrase",
+        "workspace": "6 - Layout Manager",
+        "title": "VIP Phrase",
+        "file": "vip-phrase.html",
+        "headerColor": "#525F78",
+        "width": 3
       }
     ]
   }

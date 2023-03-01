@@ -22,6 +22,11 @@
 			padding: 5px;
 		}
 
+		.vip {
+			border: rgb(239, 193, 41) 3px solid;
+			background-color: #5e243d;
+		}
+
 		.container {
 			padding: 2px 16px;
 		}
@@ -105,6 +110,8 @@
 <body>
 	<div class="donation-reader">
 		<div class="donation-col">
+			<div class="col-sm-12" id="vipdonations">
+			</div>
 			<div class="col-sm-12" id="donations">
 			</div>
 		</div>
@@ -155,13 +162,14 @@
 		var sorter = getSort();
 		var donations = [];
 		var goals = [];
+		var vipPhraseRep = nodecg.Replicant("vip-phrase");
 		var donationRep = nodecg.Replicant("donations", "nodecg-tiltify");
 		var totalRep = nodecg.Replicant("total", "nodecg-tiltify");
 		var goalRep = nodecg.Replicant("incentives", "nodecg-starbar");
 		var comboRep = nodecg.Replicant("combo-total", "nodecg-starbar");
 		var comboRecordRep = nodecg.Replicant("combo-record", "nodecg-starbar");
 		var cookieRep = nodecg.Replicant("cookie-total", "nodecg-colobox");
-		NodeCG.waitForReplicants(donationRep, goalRep, totalRep, cookieRep, comboRep, comboRecordRep).then(() => {
+		NodeCG.waitForReplicants(vipPhraseRep, donationRep, goalRep, totalRep, cookieRep, comboRep, comboRecordRep).then(() => {
 			cookieRep.on("change",(newval,oldval) => {
 				document.getElementById("via-incentive").innerText = `${toUSD(newval)} via Chaos Cookie`
 			})
@@ -217,6 +225,12 @@
 			$("#donations").empty();
 			// Get only unreads
 			donations = donations.filter(don => !don.read)
+			let vipDonations = []
+			console.log(vipPhraseRep.value)
+			if(vipPhraseRep.value !== "") {
+				vipDonations = donations.filter(don => don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) == 0)
+				donations = donations.filter(don => don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) !== 0)
+			} 
 			donations = donations.sort(sorter)
 			let unreadCount = donations.length;
 			$("#total-donations").text(donationsIn.length)
@@ -229,6 +243,20 @@
 				row.find("#time").text(`${new Date(donation.completedAt).toLocaleString()}`);
 				if (donation.comment != undefined) {
 					row.find("#message").text(donation.comment);
+				} else {
+					row.find("#message").text("No Message");
+				}
+				row.find("#button-" + donation.id).click(function () {
+					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', donation);
+				});
+			}
+			for (donation of vipDonations) {
+				$("#vipdonations").append("<div class=\"card vip\" id=\"donation-row-" + donation.id + "\"><div class=\"container\"><div class=\"title-bar\"><h2 id=\"name\"></h2><h4 id=\"time\"></h4></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + donation.id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
+				const row = $("#donation-row-" + donation.id);
+				row.find("#name").text(`⭐ $${donation.amount.toFixed(2)} donated by ${donation.name} `);
+				row.find("#time").text(`${new Date(donation.completedAt).toLocaleString()}`);
+				if (donation.comment != undefined) {
+					row.find("#message").text(donation.comment.substring(vipPhraseRep.value.length));
 				} else {
 					row.find("#message").text("No Message");
 				}
