@@ -229,7 +229,7 @@
 			console.log(vipPhraseRep.value)
 			if(vipPhraseRep.value !== "") {
 				vipDonations = donations.filter(don => don.comment && don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) == 0)
-				donations = donations.filter(don => don.comment && don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) !== 0)
+				donations = donations.filter(don => !don.comment || don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) !== 0)
 			} 
 			donations = donations.sort(sorter)
 			let unreadCount = donations.length;
