@@ -227,12 +227,12 @@
 			donations = donations.filter(don => !don.read)
 			let vipDonations = []
 			console.log(vipPhraseRep.value)
+			let unreadCount = donations.length;
 			if(vipPhraseRep.value !== "") {
 				vipDonations = donations.filter(don => don.comment && don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) == 0)
 				donations = donations.filter(don => !don.comment || don.comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) !== 0)
 			} 
 			donations = donations.sort(sorter)
-			let unreadCount = donations.length;
 			$("#total-donations").text(donationsIn.length)
 			$("#dollars-per").text(toUSD(totalRep.value/donationsIn.length) + " avg per dono")
 			$("#update").text("Last updated: "+new Date().toLocaleTimeString())
@@ -247,7 +247,8 @@
 					row.find("#message").text("No Message");
 				}
 				row.find("#button-" + donation.id).click(function () {
-					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', donation);
+					let dono = {id: parseInt(this.id.replace("button-",""))}
+					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', dono);
 				});
 			}
 			for (donation of vipDonations) {
@@ -261,7 +262,8 @@
 					row.find("#message").text("No Message");
 				}
 				row.find("#button-" + donation.id).click(function () {
-					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', donation);
+					let dono = {id: parseInt(this.id.replace("button-",""))}
+					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', dono);
 				});
 			}
 			$("#unread-donations").text(unreadCount);
