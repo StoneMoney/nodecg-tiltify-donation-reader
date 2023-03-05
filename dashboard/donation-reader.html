@@ -133,7 +133,8 @@
 			<div class="stats-card">
 				Total Raised
 				<h2 id="total-raised">LOADING!</h2>
-				<h4 id="via-incentive">??? via Chaos Cookie</h4>
+				<h4>$103,316.86 via Chaos Cookie</h4>
+				<h4 id="via-incentive">??? via Thrown Controllers</h4>
 			</div>
 			<div class="stats-card">
 				Total Donations
@@ -171,7 +172,7 @@
 		var cookieRep = nodecg.Replicant("cookie-total", "nodecg-colobox");
 		NodeCG.waitForReplicants(vipPhraseRep, donationRep, goalRep, totalRep, cookieRep, comboRep, comboRecordRep).then(() => {
 			cookieRep.on("change",(newval,oldval) => {
-				document.getElementById("via-incentive").innerText = `${toUSD(newval)} via Chaos Cookie`
+				document.getElementById("via-incentive").innerText = `${toUSD(newval)} via Thrown Controllers`
 			})
 			comboRep.on("change",(newVal, oldVal) => {
 				document.getElementById("combo-count").innerText = comboRep.value
