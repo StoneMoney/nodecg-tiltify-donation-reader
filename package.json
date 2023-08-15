@@ -22,11 +22,11 @@
     "bundleDependencies": {
       "nodecg-tiltify": "^1.0.0"
     },
-    "compatibleRange": "^1.1.1",
+    "compatibleRange": ">=1.1.1",
     "dashboardPanels": [
       {
         "name": "1 - Donation Reader",
-        "title": "Donation Reader",
+        "title": "1 - Donation Reader",
         "file": "donation-reader.html",
         "fullbleed": true,
         "headerColor": "#525F78"
