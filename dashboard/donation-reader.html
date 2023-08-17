@@ -285,7 +285,7 @@
 			return b.completedAt - a.completedAt
 		}
 		function largestFirstSort(a,b) {
-			return b.amount - a.amount
+			return parseFloat(b.amount.value) - parseFloat(a.amount.value)
 		}
 		function toUSD(input) {
 			return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(input))
