@@ -280,10 +280,10 @@
 			}
 		}
 		function oldestFirstSort(a,b) {
-			return a.completedAt - b.completedAt
+			return (new Date(a.completedAt)).getTime() - (new Date(b.completedAt)).getTime()
 		}
 		function newestFirstSort(a,b) {
-			return b.completedAt - a.completedAt
+			return (new Date(b.completedAt)).getTime() - (new Date(a.completedAt)).getTime()
 		}
 		function largestFirstSort(a,b) {
 			return parseFloat(b.amount) - parseFloat(a.amount)
