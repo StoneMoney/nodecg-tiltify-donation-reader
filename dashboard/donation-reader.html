@@ -235,7 +235,7 @@
 			for (donation of donations) {
 				$("#donations").append("<div class=\"card\" id=\"donation-row-" + donation.id + "\"><div class=\"container\"><div class=\"title-bar\"><h2 id=\"name\"></h2><h4 id=\"time\"></h4></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + donation.id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 				const row = $("#donation-row-" + donation.id);
-				row.find("#name").text(`$${parseFloat(donation.amount.value).toFixed(2)} donated by ${donation.donor_name} `);
+				row.find("#name").text(`$${parseFloat(donation.amount).toFixed(2)} donated by ${donation.name} `);
 				row.find("#time").text(`${new Date(donation.completedAt).toLocaleString()}`);
 				if (donation.donor_comment != undefined) {
 					row.find("#message").text(donation.donor_comment);
@@ -250,7 +250,7 @@
 			for (vdonation of vipDonations) {
 					$("#vipdonations").append("<div class=\"card vip\" id=\"donation-row-" + vdonation.id + "\"><div class=\"container\"><div class=\"title-bar\"><h2 id=\"name\"></h2><h4 id=\"time\"></h4></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + vdonation.id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 					const row = $("#donation-row-" + vdonation.id);
-					row.find("#name").text(`⭐ $${parseFloat(vdonation.amount.value).toFixed(2)} donated by ${vdonation.donor_name} `);
+					row.find("#name").text(`⭐ $${parseFloat(vdonation.amount).toFixed(2)} donated by ${vdonation.name} `);
 					row.find("#time").text(`${new Date(vdonation.completedAt).toLocaleString()}`);
 					if (vdonation.donor_comment != undefined) {
 						row.find("#message").text(vdonation.donor_comment.substring(vipPhraseRep.value.length));
@@ -285,7 +285,7 @@
 			return b.completedAt - a.completedAt
 		}
 		function largestFirstSort(a,b) {
-			return parseFloat(b.amount.value) - parseFloat(a.amount.value)
+			return parseFloat(b.amount) - parseFloat(a.amount)
 		}
 		function toUSD(input) {
 			return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(input))
