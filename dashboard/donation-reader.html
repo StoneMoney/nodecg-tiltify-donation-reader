@@ -233,7 +233,7 @@
 			$("#dollars-per").text(toUSD(totalRep.value/donationsIn.length) + " avg per dono")
 			$("#update").text("Last updated: "+new Date().toLocaleTimeString())
 			for (donation of donations) {
-				console.log(donation)
+				// console.log({...donation})
 				$("#donations").append("<div class=\"card\" id=\"donation-row-" + donation.id + "\"><div class=\"container\"><div class=\"title-bar\"><h2 id=\"name\"></h2><h4 id=\"time\"></h4></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + donation.id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 				const row = $("#donation-row-" + donation.id);
 				row.find("#name").text(`$${parseFloat(donation.amount).toFixed(2)} donated by ${donation.name} `);
@@ -244,7 +244,7 @@
 					row.find("#message").text("No Message");
 				}
 				row.find("#button-" + donation.id).click(function () {
-					let dono = {id: parseInt(this.id.replace("button-",""))}
+					let dono = {id: this.id.replace("button-","")}
 					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', dono);
 				});
 			}
