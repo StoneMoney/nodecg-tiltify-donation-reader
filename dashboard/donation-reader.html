@@ -174,12 +174,17 @@
 		var goals = [];
 		var vipPhraseRep = nodecg.Replicant("vip-phrase");
 		var donationRep = nodecg.Replicant("donations", "nodecg-tiltify");
+		var allDonationRep = nodecg.Replicant("alldonations", "nodecg-tiltify");
 		var totalRep = nodecg.Replicant("total", "nodecg-tiltify");
 		var goalRep = nodecg.Replicant("incentives", "nodecg-starbar");
 		var comboRep = nodecg.Replicant("combo-total", "nodecg-starbar");
 		var comboRecordRep = nodecg.Replicant("combo-record", "nodecg-starbar");
 		var pollsRep = nodecg.Replicant("donationpolls", "nodecg-tiltify");
-		NodeCG.waitForReplicants(vipPhraseRep, donationRep, goalRep, totalRep, comboRep, comboRecordRep).then(() => {
+		NodeCG.waitForReplicants(allDonationRep, vipPhraseRep, donationRep, goalRep, totalRep, comboRep, comboRecordRep).then(() => {
+			allDonationRep.on("change", function (newvalue, oldvalue) {
+				$("#total-donations").text(newvalue.length)
+				$("#dollars-per").text(toUSD(totalRep.value/newvalue.length) + " avg per dono")
+			});
 			pollsRep.on("change",(newVal, oldVal) => {
 				let polls = [...pollsRep.value.filter(poll => poll.active)]
 				if(polls.length == 0) {
@@ -260,18 +265,14 @@
 			// Get only unreads
 			donations = donations.filter(don => !don.read)
 			let vipDonations = []
-			console.log(vipPhraseRep.value)
 			let unreadCount = donations.length;
 			if(vipPhraseRep.value !== "") {
 				vipDonations = donations.filter(don => don.donor_comment && don.donor_comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) == 0)
 				donations = donations.filter(don => !don.donor_comment || don.donor_comment.toLowerCase().indexOf(vipPhraseRep.value.toLowerCase()) !== 0)
 			} 
 			donations = donations.sort(sorter)
-			$("#total-donations").text(donationsIn.length)
-			$("#dollars-per").text(toUSD(totalRep.value/donationsIn.length) + " avg per dono")
 			$("#update").text("Last updated: "+new Date().toLocaleTimeString())
 			for (donation of donations) {
-				// console.log({...donation})
 				$("#donations").append("<div class=\"card\" id=\"donation-row-" + donation.id + "\"><div class=\"container\"><div class=\"title-bar\"><h2 id=\"name\"></h2><h4 id=\"time\"></h4></div><p id=\"message\"></p><p><button class=\"btn teal block\" id=\"button-" + donation.id + "\" href=\"#\" role=\"button\">Mark as read</button></p></div></div>");
 				const row = $("#donation-row-" + donation.id);
 				row.find("#name").text(`$${parseFloat(donation.amount).toFixed(2)} donated by ${donation.name} `);
