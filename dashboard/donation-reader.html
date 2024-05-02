@@ -160,6 +160,12 @@
 				<h2 id="combo-count">No Combo</h2>
 				<h4 id="combo-record">Event record: 0</h4>
 			</div>
+			<div class="stats-card">
+				Match Tracker
+				<h2 id="match-header">No Matching</h2>
+				<h4 id="match-subheader">-</h4>
+				<div id="match-people"></div>
+			</div>
 			<div class="col-sm-12" id="goals"></div>
 		</div>
 	</div>
@@ -180,7 +186,8 @@
 		var comboRep = nodecg.Replicant("combo-total", "nodecg-starbar");
 		var comboRecordRep = nodecg.Replicant("combo-record", "nodecg-starbar");
 		var pollsRep = nodecg.Replicant("donationpolls", "nodecg-tiltify");
-		NodeCG.waitForReplicants(allDonationRep, vipPhraseRep, donationRep, goalRep, totalRep, comboRep, comboRecordRep).then(() => {
+		var matchingRep = nodecg.Replicant("donationmatches", "nodecg-tiltify")
+		NodeCG.waitForReplicants(allDonationRep, vipPhraseRep, donationRep, goalRep, totalRep, comboRep, comboRecordRep, matchingRep).then(() => {
 			allDonationRep.on("change", function (newvalue, oldvalue) {
 				$("#total-donations").text(newvalue.length)
 				$("#dollars-per").text(toUSD(totalRep.value/newvalue.length) + " avg per dono")
@@ -245,6 +252,24 @@
 			donationRep.on("change", function (newvalue, oldvalue) {
 				drawDonations(newvalue)
 			});
+			matchingRep.on("change", function (newvalue, old) {
+				let activeMatches = newvalue.filter((t)=>t.active)
+				if(activeMatches.length > 0) {
+					$("#match-header").text(`${activeMatches.length+1}X Match Active`)
+					let pool = 0
+					let contributors = ""
+					for(let match of activeMatches) {
+						pool += parseFloat(match.amount.value) - parseFloat(match.total_amount_raised.value)
+						contributors += `<br>$${match.total_amount_raised.value} of $${match.amount.value} from <b>${escape(match.matched_by)}</b>`
+					}
+					$("#match-subheader").text(`$${pool.toFixed(2)} available to be matched`)
+					$("#match-people").html(contributors)
+				} else {
+					$("#match-header").text("No Matching")
+					$("#match-subheader").text("-")
+					$("#match-people").html()
+				}
+			})
 		});
 		$("#clear-donations").click(function () {
 			var confirmClear = confirm("Are you sure you want to clear all donations?")
