@@ -179,14 +179,14 @@
 		var donations = [];
 		var goals = [];
 		var vipPhraseRep = nodecg.Replicant("vip-phrase");
-		var donationRep = nodecg.Replicant("donations", "nodecg-tiltify");
-		var allDonationRep = nodecg.Replicant("alldonations", "nodecg-tiltify");
-		var totalRep = nodecg.Replicant("total", "nodecg-tiltify");
+		var donationRep = nodecg.Replicant("donations", "nodecg-starbar");
+		var allDonationRep = nodecg.Replicant("alldonations", "nodecg-starbar");
+		var totalRep = nodecg.Replicant("total", "nodecg-starbar");
 		var goalRep = nodecg.Replicant("incentives", "nodecg-starbar");
 		var comboRep = nodecg.Replicant("combo-total", "nodecg-starbar");
 		var comboRecordRep = nodecg.Replicant("combo-record", "nodecg-starbar");
-		var pollsRep = nodecg.Replicant("donationpolls", "nodecg-tiltify");
-		var matchingRep = nodecg.Replicant("donationmatches", "nodecg-tiltify")
+		var pollsRep = nodecg.Replicant("donationpolls", "nodecg-starbar");
+		var matchingRep = nodecg.Replicant("donationmatches", "nodecg-starbar");
 		NodeCG.waitForReplicants(allDonationRep, vipPhraseRep, donationRep, goalRep, totalRep, comboRep, comboRecordRep, matchingRep).then(() => {
 			allDonationRep.on("change", function (newvalue, oldvalue) {
 				$("#total-donations").text(newvalue.length)
@@ -274,7 +274,7 @@
 		$("#clear-donations").click(function () {
 			var confirmClear = confirm("Are you sure you want to clear all donations?")
 			if (confirmClear == true) {
-				nodecg.sendMessageToBundle('clear-donations', 'nodecg-tiltify');
+				nodecg.sendMessageToBundle('clear-donations', "nodecg-starbar");
 			}
 		});
 		$("#donation-sorter").on("change",function () {
@@ -309,7 +309,7 @@
 				}
 				row.find("#button-" + donation.id).click(function () {
 					let dono = {id: this.id.replace("button-","")}
-					nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', dono);
+					nodecg.sendMessageToBundle('mark-donation-as-read', "nodecg-starbar", dono);
 				});
 			}
 			for (vdonation of vipDonations) {
@@ -324,7 +324,7 @@
 					}
 					row.find("#button-" + vdonation.id).click(function () {
 						let dono = {id: parseInt(this.id.replace("button-",""))}
-						nodecg.sendMessageToBundle('mark-donation-as-read', 'nodecg-tiltify', dono);
+						nodecg.sendMessageToBundle('mark-donation-as-read', "nodecg-starbar", dono);
 					});
 			}
 			$("#unread-donations").text(unreadCount);
